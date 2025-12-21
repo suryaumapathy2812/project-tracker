@@ -1,0 +1,263 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// BETTER-AUTH TABLES (auto-generated + role)
+// ============================================
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String    @default("Student") // Admin, PM, Student
+  banned        Boolean?
+  banReason     String?
+  banExpires    DateTime?
+
+  sessions Session[]
+  accounts Account[]
+
+  // Better Auth organization plugin
+  members Member[]
+
+  // PRD relations
+  batchId         String?
+  batch           Batch?          @relation(fields: [batchId], references: [id])
+  memberships     OrgMember[]
+  assignments     Assignment[]
+  createdProjects Project[]       @relation("CreatedProjects")
+  studentProjects StudentProject[]
+
+  invitations Invitation[]
+
+  @@map("user")
+}
+
+model Session {
+  id                   String   @id
+  expiresAt            DateTime
+  token                String   @unique
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  impersonatedBy       String?
+  activeOrganizationId String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("session")
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+  @@index([identifier])
+}
+
+// ============================================
+// BETTER-AUTH ORGANIZATION PLUGIN TABLES
+// ============================================
+
+model Organization {
+  id        String   @id
+  name      String
+  slug      String   @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String   @id
+  userId         String
+  organizationId String
+  role           String
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("member")
+  @@index([userId])
+  @@index([organizationId])
+}
+
+model Invitation {
+  id             String   @id
+  email          String
+  inviterId      String
+  organizationId String
+  role           String
+  status         String
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  inviter      User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+  @@index([organizationId])
+  @@index([email])
+}
+
+// ============================================
+// PRD CUSTOM TABLES
+// ============================================
+
+model CustomOrg {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  createdAt DateTime @default(now())
+
+  batches  Batch[]
+  members  OrgMember[]
+  projects Project[]
+
+  @@map("custom_org")
+}
+
+model Batch {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String
+  orgId     String
+  createdAt DateTime @default(now())
+
+  org      CustomOrg @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  students User[]
+
+  @@unique([orgId, slug])
+  @@map("batch")
+}
+
+model OrgMember {
+  id     String @id @default(uuid())
+  userId String
+  orgId  String
+  role   String   @default("Student")
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  CustomOrg @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@map("org_member")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  orgId       String
+  createdBy   String
+  shareId     String   @unique @default(uuid())
+  createdAt   DateTime @default(now())
+
+  org             CustomOrg        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  creator         User             @relation("CreatedProjects", fields: [createdBy], references: [id])
+  features        Feature[]
+  assignments     Assignment[]
+  studentProjects StudentProject[]
+
+  @@map("project")
+}
+
+model Feature {
+  id          String   @id @default(uuid())
+  projectId   String
+  title       String
+  description String
+  tags        String[]
+  createdAt   DateTime @default(now())
+
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignments Assignment[]
+
+  @@map("feature")
+}
+
+model Assignment {
+  id         String   @id @default(uuid())
+  projectId  String
+  featureId  String
+  studentId  String
+  status     Status   @default(Backlog)
+  assignedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  student User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, featureId, studentId])
+  @@map("assignment")
+}
+
+model StudentProject {
+  id        String   @id @default(uuid())
+  studentId String
+  projectId String
+  joinedAt  DateTime @default(now())
+
+  student User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, projectId])
+  @@map("student_project")
+}
+
+enum Status {
+  Backlog
+  Todo
+  InProgress
+  Done
+  Canceled
+}
