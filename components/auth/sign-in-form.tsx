@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Instrument_Serif } from "next/font/google";
 import { authClient } from "@/lib/auth-client";
 
@@ -116,16 +115,6 @@ export function SignInForm() {
         </button>
       </form>
 
-      {/* Footer */}
-      <p className="animate-fade-in-up-2 mt-8 text-center text-[13px] text-stone-500 dark:text-stone-400">
-        Don&apos;t have an account?{" "}
-        <Link
-          href="/register"
-          className="text-stone-700 underline underline-offset-2 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100"
-        >
-          Create one
-        </Link>
-      </p>
     </div>
   );
 }

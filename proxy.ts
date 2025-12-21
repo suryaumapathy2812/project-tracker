@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/login", "/register"];
-const AUTH_ROUTES = ["/login", "/register"];
+const PUBLIC_ROUTES = ["/", "/login"];
+const AUTH_ROUTES = ["/login"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes and API/static paths - allow access
@@ -17,8 +17,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get session token
-  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  // Get session token - check both dev and prod cookie names
+  // In production (HTTPS), Better Auth prefixes cookies with "__Secure-"
+  const sessionToken =
+    request.cookies.get("better-auth.session_token")?.value ||
+    request.cookies.get("__Secure-better-auth.session_token")?.value;
 
   if (!sessionToken) {
     // No session token - redirect to login for protected routes
@@ -34,7 +37,7 @@ export async function middleware(request: NextRequest) {
       `${request.nextUrl.origin}/api/auth/get-session`,
       {
         headers: { cookie: request.headers.get("cookie") || "" },
-      }
+      },
     );
 
     const session = response.ok ? await response.json() : null;
