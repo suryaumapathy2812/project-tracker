@@ -90,6 +90,7 @@ export function SignInForm() {
           <input
             id="password"
             type="password"
+            placeholder="**********"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -114,7 +115,6 @@ export function SignInForm() {
           )}
         </button>
       </form>
-
     </div>
   );
 }

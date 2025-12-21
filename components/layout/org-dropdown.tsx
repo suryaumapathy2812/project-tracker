@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronsUpDown, Check, Plus } from "lucide-react";
@@ -13,9 +14,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigation } from "@/lib/contexts/navigation-context";
+import { CreateOrgDialog } from "./create-org-dialog";
 
 export function OrgDropdown() {
   const router = useRouter();
+  const [createOpen, setCreateOpen] = useState(false);
   const { currentOrg, availableOrgs } = useNavigation();
 
   const handleSelectOrg = (orgSlug: string) => {
@@ -67,12 +70,15 @@ export function OrgDropdown() {
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setCreateOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           <span>Create Organization</span>
         </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Create Org Dialog */}
+      <CreateOrgDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }

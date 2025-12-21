@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronsUpDown, Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigation } from "@/lib/contexts/navigation-context";
 import { useSession } from "@/lib/auth-client";
+import { CreateBatchDialog } from "./create-batch-dialog";
 
 export function BatchDropdown() {
   const router = useRouter();
+  const [createOpen, setCreateOpen] = useState(false);
   const { currentOrg, currentBatch, availableBatches, isOrgLevel } =
     useNavigation();
   const { data: session } = useSession();
@@ -84,7 +87,7 @@ export function BatchDropdown() {
         {isAdmin && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setCreateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               <span>Create Batch</span>
             </DropdownMenuItem>
@@ -92,6 +95,9 @@ export function BatchDropdown() {
         )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Create Batch Dialog */}
+      <CreateBatchDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }

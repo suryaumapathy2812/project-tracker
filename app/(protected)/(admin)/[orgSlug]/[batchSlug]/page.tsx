@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Users,
-  ClipboardList,
-  Layers,
-  CheckCircle2,
-  Clock,
-} from "lucide-react";
+import { Users, ClipboardList } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { useNavigation } from "@/lib/contexts/navigation-context";
 import { useSession } from "@/lib/auth-client";
@@ -244,86 +238,56 @@ export default function BatchOverviewPage() {
   }
 
   // Admin/PM view - show batch overview
+  const displayStudents = batch?.students?.slice(0, 3) || [];
+
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <PageHeader title={currentBatch.name} description="Batch overview" />
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Students</CardTitle>
-              <Users className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">
-                {batch?._count?.students || 0}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              <Clock className="size-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">-</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle2 className="size-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">-</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Students Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Students</h2>
+            <Link
+              href={`/${currentOrg?.slug}/${currentBatch.slug}/users`}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              View all
+            </Link>
+          </div>
 
-        {/* Students List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Students</CardTitle>
-            <CardDescription>Students in this batch</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!batch?.students || batch.students.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Users className="size-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">No students yet</h3>
-                <p className="text-muted-foreground">
-                  Assign students to this batch.
-                </p>
-                <Link href={`/${currentOrg?.slug}/${currentBatch.slug}/users`}>
-                  <span className="mt-2 text-primary hover:underline">
-                    Manage Users
-                  </span>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {batch.students.map((student) => (
-                  <div
-                    key={student.id}
-                    className="flex items-center gap-3 rounded-lg border p-3"
-                  >
-                    <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-                      {student.name?.charAt(0).toUpperCase() || "U"}
+          {displayStudents.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+              <Users className="size-10 text-muted-foreground" />
+              <p className="mt-3 text-sm text-muted-foreground">
+                No students yet
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {displayStudents.map((student) => (
+                <Card key={student.id} className="h-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                        {student.name?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                      <div className="min-w-0">
+                        <CardTitle className="truncate text-base">
+                          {student.name}
+                        </CardTitle>
+                        <CardDescription className="truncate">
+                          {student.email}
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{student.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {student.email}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </PageContainer>
   );

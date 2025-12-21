@@ -180,9 +180,9 @@ export default async function PublicProjectPreviewPage({
         </div>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-[10px] font-medium uppercase tracking-[0.25em] text-stone-300 dark:text-stone-700">
+        {/*<footer className="mt-16 text-center text-[10px] font-medium uppercase tracking-[0.25em] text-stone-300 dark:text-stone-700">
           Powered by Project Tracker
-        </footer>
+        </footer>*/}
       </div>
     </div>
   );

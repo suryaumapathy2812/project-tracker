@@ -61,7 +61,7 @@ export function UserButton() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
           <User className="mr-2 size-4" />
           Profile
         </DropdownMenuItem>

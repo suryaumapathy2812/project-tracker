@@ -51,8 +51,11 @@ export default async function Home() {
 
         {/* Tagline */}
         <p className="animate-fade-in-up-2 mt-6 max-w-sm text-[17px] leading-relaxed text-stone-500 dark:text-stone-400">
-          From features to feedback.<br />
-          <span className="text-stone-700 dark:text-stone-300">Track every milestone.</span>
+          From features to feedback.
+          <br />
+          <span className="text-stone-700 dark:text-stone-300">
+            Track every milestone.
+          </span>
         </p>
 
         {/* Decorative divider */}
@@ -68,7 +71,7 @@ export default async function Home() {
             href="/login"
             className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-full bg-stone-900 px-8 text-[13px] font-medium tracking-wide text-white transition-all duration-300 hover:bg-stone-800 hover:shadow-lg hover:shadow-stone-900/20 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white dark:hover:shadow-stone-100/10"
           >
-            Sign In
+            Get Started
             <svg
               className="ml-2 h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
               fill="none"
@@ -76,16 +79,20 @@ export default async function Home() {
               stroke="currentColor"
               strokeWidth={2}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
             </svg>
           </Link>
         </div>
       </main>
 
       {/* Bottom flourish */}
-      <div className="animate-fade-in-up-5 absolute bottom-12 left-1/2 -translate-x-1/2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-300 dark:text-stone-700">
+      {/*<div className="animate-fade-in-up-5 absolute bottom-12 left-1/2 -translate-x-1/2 text-[10px] font-medium uppercase tracking-[0.25em] text-stone-300 dark:text-stone-700">
         Simple · Elegant · Effective
-      </div>
+      </div>*/}
     </div>
   );
 }

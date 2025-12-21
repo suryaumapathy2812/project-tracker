@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { UserPlus, Users, MoreHorizontal } from "lucide-react";
+import { Users, MoreHorizontal } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { useNavigation } from "@/lib/contexts/navigation-context";
 import { PageContainer } from "@/components/ui/page-container";
@@ -9,27 +8,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -39,8 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddMemberDialog } from "@/components/users/add-member-dialog";
 import { toast } from "sonner";
 
 const roleColors: Record<string, string> = {
@@ -50,9 +33,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function BatchUsersPage() {
-  const { currentOrg, currentBatch } = useNavigation();
-  const [addOpen, setAddOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState("");
+  const { currentOrg, currentBatch, availableBatches } = useNavigation();
 
   const utils = trpc.useUtils();
 
@@ -68,24 +49,6 @@ export default function BatchUsersPage() {
       (m) => m.role === "student" && m.user.batchId === currentBatch?.id
     ) || [];
 
-  // Students in org but not in this batch
-  const availableStudents =
-    orgMembers?.filter(
-      (m) =>
-        m.role === "student" &&
-        (!m.user.batchId || m.user.batchId !== currentBatch?.id)
-    ) || [];
-
-  const assignBatch = trpc.batches.assignStudent.useMutation({
-    onSuccess: () => {
-      utils.users.listByOrg.invalidate({ orgId: currentOrg?.id || "" });
-      setAddOpen(false);
-      setSelectedUserId("");
-      toast.success("Student added to batch");
-    },
-    onError: (error) => toast.error(error.message),
-  });
-
   const removeBatch = trpc.batches.removeStudent.useMutation({
     onSuccess: () => {
       utils.users.listByOrg.invalidate({ orgId: currentOrg?.id || "" });
@@ -93,14 +56,6 @@ export default function BatchUsersPage() {
     },
     onError: (error) => toast.error(error.message),
   });
-
-  const handleAddStudent = () => {
-    if (!selectedUserId || !currentBatch) return;
-    assignBatch.mutate({
-      userId: selectedUserId,
-      batchId: currentBatch.id,
-    });
-  };
 
   const isLoading = !currentOrg || !currentBatch;
 
@@ -119,60 +74,11 @@ export default function BatchUsersPage() {
     <PageContainer>
       <div className="space-y-6">
         <PageHeader title="Students" description={`Students in ${currentBatch.name}`}>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 size-4" />
-                Add Student
-              </Button>
-            </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Student to Batch</DialogTitle>
-              <DialogDescription>
-                Select a student to add to {currentBatch.name}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label>Student</Label>
-                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a student" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableStudents.length === 0 ? (
-                      <SelectItem value="none" disabled>
-                        No available students
-                      </SelectItem>
-                    ) : (
-                      availableStudents.map((member) => (
-                        <SelectItem key={member.user.id} value={member.user.id}>
-                          {member.user.name} ({member.user.email})
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setAddOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddStudent}
-                disabled={!selectedUserId || assignBatch.isPending}
-              >
-                {assignBatch.isPending ? "Adding..." : "Add"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-          </Dialog>
+          <AddMemberDialog
+            orgId={currentOrg.id}
+            availableBatches={availableBatches}
+            defaultBatchId={currentBatch.id}
+          />
         </PageHeader>
 
         {batchStudents.length === 0 ? (

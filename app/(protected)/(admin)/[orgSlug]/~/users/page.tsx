@@ -1,22 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { UserPlus, Users, MoreHorizontal, Search } from "lucide-react";
+import { Users, MoreHorizontal, Search } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { useNavigation } from "@/lib/contexts/navigation-context";
 import { PageContainer } from "@/components/ui/page-container";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,9 +30,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddMemberDialog } from "@/components/users/add-member-dialog";
 import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
@@ -247,25 +238,12 @@ function UsersTable({
 
 export default function OrgUsersPage() {
   const { currentOrg, availableBatches } = useNavigation();
-  const [addOpen, setAddOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState("");
 
   const utils = trpc.useUtils();
   const { data: members, isLoading } = trpc.users.listByOrg.useQuery(
     { orgId: currentOrg?.id || "" },
     { enabled: !!currentOrg?.id }
   );
-  const { data: allUsers } = trpc.users.listAll.useQuery();
-
-  const addToOrg = trpc.users.addToOrg.useMutation({
-    onSuccess: () => {
-      utils.users.listByOrg.invalidate({ orgId: currentOrg?.id || "" });
-      setAddOpen(false);
-      setSelectedUserId("");
-      toast.success("User added to organization");
-    },
-    onError: (error) => toast.error(error.message),
-  });
 
   const removeFromOrg = trpc.users.removeFromOrg.useMutation({
     onSuccess: () => {
@@ -290,16 +268,6 @@ export default function OrgUsersPage() {
     },
     onError: (error) => toast.error(error.message),
   });
-
-  // Filter users not already in this org
-  const availableUsers = allUsers?.filter(
-    (user) => !members?.some((m) => m.user.id === user.id)
-  );
-
-  const handleAddUser = () => {
-    if (!selectedUserId || !currentOrg) return;
-    addToOrg.mutate({ userId: selectedUserId, orgId: currentOrg.id });
-  };
 
   // Filter members by role (case-insensitive)
   const allMembers = members || [];
@@ -340,54 +308,10 @@ export default function OrgUsersPage() {
     <PageContainer>
       <div className="space-y-6">
         <PageHeader title="Users" description={`All users in ${currentOrg.name}`}>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 size-4" />
-                Add User
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add User to Organization</DialogTitle>
-                <DialogDescription>
-                  Select a user to add to this organization.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label>User</Label>
-                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a user" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableUsers?.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setAddOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAddUser}
-                  disabled={!selectedUserId || addToOrg.isPending}
-                >
-                  {addToOrg.isPending ? "Adding..." : "Add"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <AddMemberDialog
+            orgId={currentOrg.id}
+            availableBatches={availableBatches}
+          />
         </PageHeader>
 
         <Tabs defaultValue="all">

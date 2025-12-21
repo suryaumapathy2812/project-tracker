@@ -68,6 +68,23 @@ export const routes: RouteConfig[] = [
     },
   },
   {
+    id: "org-batches",
+    path: "/:orgSlug/~/batches",
+    roles: ["admin"],
+    labels: {
+      default: "Batches",
+    },
+    icon: "Layers",
+    group: "admin",
+    showInNav: true,
+    order: 2,
+    visibility: "org-only",
+    meta: {
+      description: "Manage organization batches",
+      requiresOrg: true,
+    },
+  },
+  {
     id: "org-users",
     path: "/:orgSlug/~/users",
     roles: ["admin"],
@@ -77,13 +94,14 @@ export const routes: RouteConfig[] = [
     icon: "Users",
     group: "admin",
     showInNav: true,
-    order: 2,
+    order: 2.5,
     visibility: "org-only",
     meta: {
       description: "Manage organization members",
       requiresOrg: true,
     },
   },
+
   {
     id: "projects",
     path: "/:orgSlug/~/projects",

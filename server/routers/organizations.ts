@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { v4 as uuid } from "uuid";
 import { router, adminProcedure, protectedProcedure } from "../trpc";
 import { generateUniqueSlug } from "@/lib/slugify";
 
@@ -66,9 +67,57 @@ export const organizationsRouter = router({
         existingSlugs.map((o) => o.slug)
       );
 
-      return ctx.db.customOrg.create({
-        data: { ...input, slug },
-      });
+      // Generate a shared ID for both Better Auth org and CustomOrg
+      const orgId = uuid();
+
+      try {
+        // 1. Create Better Auth Organization
+        await ctx.db.organization.create({
+          data: {
+            id: orgId,
+            name: input.name,
+            slug,
+            logo: input.logo,
+          },
+        });
+
+        // 2. Create Better Auth Member with Admin role
+        await ctx.db.member.create({
+          data: {
+            id: uuid(),
+            userId: ctx.user.id,
+            organizationId: orgId,
+            role: "Admin",
+          },
+        });
+
+        // 3. Create CustomOrg with same ID
+        const customOrg = await ctx.db.customOrg.create({
+          data: {
+            id: orgId,
+            name: input.name,
+            slug,
+            logo: input.logo,
+          },
+        });
+
+        // 4. Create OrgMember with admin role
+        await ctx.db.orgMember.create({
+          data: {
+            userId: ctx.user.id,
+            orgId: orgId,
+            role: "admin",
+          },
+        });
+
+        return customOrg;
+      } catch (error) {
+        console.error("Failed to create organization:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create organization",
+        });
+      }
     }),
 
   update: adminProcedure
