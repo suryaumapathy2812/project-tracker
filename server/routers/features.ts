@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { router, pmProcedure, protectedProcedure } from "../trpc";
 
 export const featuresRouter = router({
@@ -34,7 +35,15 @@ export const featuresRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.feature.create({ data: input });
+      const feature = await ctx.db.feature.create({
+        data: input,
+        include: { project: { select: { shareId: true } } },
+      });
+
+      // Revalidate the public project preview page
+      revalidatePath(`/p/${feature.project.shareId}`);
+
+      return feature;
     }),
 
   update: pmProcedure
@@ -48,12 +57,34 @@ export const featuresRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      return ctx.db.feature.update({ where: { id }, data });
+      const feature = await ctx.db.feature.update({
+        where: { id },
+        data,
+        include: { project: { select: { shareId: true } } },
+      });
+
+      // Revalidate the public project preview page
+      revalidatePath(`/p/${feature.project.shareId}`);
+
+      return feature;
     }),
 
   delete: pmProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.feature.delete({ where: { id: input.id } });
+      // Get the shareId before deleting
+      const feature = await ctx.db.feature.findUnique({
+        where: { id: input.id },
+        select: { project: { select: { shareId: true } } },
+      });
+
+      const deleted = await ctx.db.feature.delete({ where: { id: input.id } });
+
+      // Revalidate the public project preview page
+      if (feature?.project.shareId) {
+        revalidatePath(`/p/${feature.project.shareId}`);
+      }
+
+      return deleted;
     }),
 });

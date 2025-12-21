@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { router, pmProcedure, publicProcedure, protectedProcedure } from "../trpc";
 
 export const projectsRouter = router({
@@ -79,7 +80,16 @@ export const projectsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      return ctx.db.project.update({ where: { id }, data });
+      const project = await ctx.db.project.update({
+        where: { id },
+        data,
+        select: { id: true, shareId: true, name: true, description: true },
+      });
+
+      // Revalidate the public project preview page
+      revalidatePath(`/p/${project.shareId}`);
+
+      return project;
     }),
 
   delete: pmProcedure
