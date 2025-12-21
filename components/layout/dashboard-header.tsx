@@ -14,7 +14,7 @@ export function DashboardHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       {/* Row 1: Logo > Org Dropdown > Batch Dropdown > User */}
-      <div className="flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="flex h-14 items-center justify-between px-2 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           {/* Logo */}
           <Link
@@ -60,7 +60,7 @@ export function DashboardHeader() {
       </div>
 
       {/* Row 2: Navigation Tabs */}
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="px-2 sm:px-6 lg:px-8">
         <NavTabs />
       </div>
     </header>

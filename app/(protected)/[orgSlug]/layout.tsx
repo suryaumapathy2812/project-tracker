@@ -15,7 +15,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   return (
     <NavigationBridge>
       <DashboardHeader />
-      <main className="w-full px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+      <main className="w-full px-2 py-6 sm:px-6 lg:px-8">{children}</main>
     </NavigationBridge>
   );
 }
