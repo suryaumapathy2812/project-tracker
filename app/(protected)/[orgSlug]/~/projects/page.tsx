@@ -2,15 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Instrument_Serif } from "next/font/google";
 import {
   Plus,
   FolderKanban,
   MoreHorizontal,
   Copy,
   ExternalLink,
-  Layers,
-  Users,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
 import { trpc } from "@/lib/trpc/client";
 import { useSession } from "@/lib/auth-client";
 import { useNavigation } from "@/lib/contexts/navigation-context";
@@ -184,11 +190,18 @@ export default function OrgProjectsPage() {
         </PageHeader>
 
         {projects?.length === 0 ? (
-          <Card>
+          <Card className="border-stone-200 dark:border-stone-800">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <FolderKanban className="size-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No projects yet</h3>
-              <p className="text-muted-foreground">
+              <FolderKanban className="size-12 text-stone-300 dark:text-stone-700" />
+              <h3
+                className={cn(
+                  instrumentSerif.className,
+                  "mt-4 text-lg tracking-[-0.02em] text-stone-900 dark:text-stone-100"
+                )}
+              >
+                No projects yet
+              </h3>
+              <p className="text-stone-500 dark:text-stone-400">
                 {isPM
                   ? "Create your first project template."
                   : "No projects available in this organization."}
@@ -198,20 +211,28 @@ export default function OrgProjectsPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {projects?.map((project) => (
-              <Card key={project.id} className="group relative flex flex-col">
+              <Card
+                key={project.id}
+                className="group relative flex flex-col border-stone-200 transition-all hover:border-stone-300 hover:shadow-sm dark:border-stone-800 dark:hover:border-stone-700"
+              >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">
+                      <CardTitle
+                        className={cn(
+                          instrumentSerif.className,
+                          "text-xl tracking-wide"
+                        )}
+                      >
                         <Link
                           href={`/${currentOrg.slug}/~/projects/${project.id}`}
-                          className="hover:underline"
+                          className="text-stone-900 transition-colors hover:text-stone-600 dark:text-stone-100 dark:hover:text-stone-300"
                         >
                           {project.name}
                         </Link>
                       </CardTitle>
                       {project.description && (
-                        <CardDescription className="mt-1 line-clamp-2">
+                        <CardDescription className="mt-1.5 line-clamp-2 text-stone-500 dark:text-stone-400">
                           {project.description}
                         </CardDescription>
                       )}
@@ -272,14 +293,22 @@ export default function OrgProjectsPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="mt-auto pt-4">
-                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Layers className="size-4" />
-                      <span>{project._count.features} features</span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-6 items-center justify-center rounded-md bg-stone-100 text-xs font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-400">
+                        {project._count.features}
+                      </span>
+                      <span className="text-sm text-stone-500 dark:text-stone-400">
+                        features
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="size-4" />
-                      <span>{project._count.assignments} assignments</span>
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-6 items-center justify-center rounded-md bg-stone-100 text-xs font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-400">
+                        {project._count.assignments}
+                      </span>
+                      <span className="text-sm text-stone-500 dark:text-stone-400">
+                        students
+                      </span>
                     </div>
                   </div>
                 </CardContent>

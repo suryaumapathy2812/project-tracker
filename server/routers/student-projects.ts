@@ -84,6 +84,7 @@ export const studentProjectsRouter = router({
       name: p.name,
       description: p.description,
       featureCount: p._count.features,
+      shareId: p.shareId,
     }));
   }),
 

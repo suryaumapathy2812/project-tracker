@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { Instrument_Serif } from "next/font/google";
 import { Plus, Trash2 } from "lucide-react";
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
 import {
-  IconLoader,
-  IconCircle,
-  IconCircleDashed,
-  IconCircleCheckFilled,
-  IconCircleX,
   IconCaretDownFilled,
   IconCaretRightFilled,
 } from "@tabler/icons-react";
 import { trpc } from "@/lib/trpc/client";
+import { statusConfig, statusOrder, type Status } from "@/lib/status-config";
 import { PageContainer } from "@/components/ui/page-container";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,53 +57,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
-type Status = "Backlog" | "Todo" | "InProgress" | "Done" | "Canceled";
-
-const statusConfig: Record<
-  Status,
-  { label: string; icon: React.ElementType; color: string; bgColor: string }
-> = {
-  InProgress: {
-    label: "In Progress",
-    icon: IconLoader,
-    color: "text-yellow-600 dark:text-yellow-400",
-    bgColor: "bg-yellow-50 dark:bg-yellow-950",
-  },
-  Todo: {
-    label: "Todo",
-    icon: IconCircle,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-950",
-  },
-  Backlog: {
-    label: "Backlog",
-    icon: IconCircleDashed,
-    color: "text-gray-500 dark:text-gray-400",
-    bgColor: "bg-gray-50 dark:bg-gray-900",
-  },
-  Done: {
-    label: "Done",
-    icon: IconCircleCheckFilled,
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-950",
-  },
-  Canceled: {
-    label: "Canceled",
-    icon: IconCircleX,
-    color: "text-red-500 dark:text-red-400",
-    bgColor: "bg-red-50 dark:bg-red-950",
-  },
-};
-
-// Order of status groups as specified
-const statusOrder: Status[] = [
-  "InProgress",
-  "Todo",
-  "Backlog",
-  "Done",
-  "Canceled",
-];
-
 interface FeatureRowProps {
   assignment: {
     id: string;
@@ -117,13 +73,14 @@ interface FeatureRowProps {
 
 function FeatureRow({ assignment, projectId }: FeatureRowProps) {
   return (
-    <Item asChild size="sm" className="cursor-pointer hover:bg-muted/50">
-      <Link href={`/my/${projectId}/${assignment.id}`}>
-        <ItemContent>
-          <ItemTitle>{assignment.feature.title}</ItemTitle>
-        </ItemContent>
-      </Link>
-    </Item>
+    <Link
+      href={`/my/${projectId}/${assignment.id}`}
+      className="block rounded-lg border border-white/60 bg-white/80 px-3 py-2.5 transition-all hover:border-stone-200 hover:bg-white hover:shadow-sm dark:border-stone-800/60 dark:bg-stone-900/50 dark:hover:border-stone-700 dark:hover:bg-stone-800/80"
+    >
+      <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+        {assignment.feature.title}
+      </span>
+    </Link>
   );
 }
 
@@ -178,9 +135,13 @@ function OnboardingFeatureList({
   return (
     <>
       <div className="space-y-4">
-        <div className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4">
-          <h2 className="text-lg font-semibold">Welcome to your project!</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-6 dark:border-stone-800 dark:bg-stone-900">
+          <h2
+            className={`${instrumentSerif.className} text-3xl tracking-[-0.02em] text-stone-900 dark:text-stone-100`}
+          >
+            Welcome to your project!
+          </h2>
+          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
             Pick features below to start working on them. Click a feature to
             view details and add it to your list.
           </p>
@@ -191,20 +152,23 @@ function OnboardingFeatureList({
             Available Features ({features.length})
           </h3>
           <div className="space-y-1">
-            {features.map((feature) => (
-              <Item
-                key={feature.id}
-                size="sm"
-                className="cursor-pointer hover:bg-muted/50"
-                onClick={() => openFeatureSheet(feature.id)}
-              >
-                <IconCircleDashed className="size-5 text-muted-foreground" />
-                <ItemContent>
-                  <ItemTitle>{feature.title}</ItemTitle>
-                </ItemContent>
-                <Plus className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-              </Item>
-            ))}
+            {features.map((feature) => {
+              const BacklogIcon = statusConfig.Backlog.icon;
+              return (
+                <Item
+                  key={feature.id}
+                  size="sm"
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => openFeatureSheet(feature.id)}
+                >
+                  <BacklogIcon className="size-5 text-muted-foreground" />
+                  <ItemContent>
+                    <ItemTitle>{feature.title}</ItemTitle>
+                  </ItemContent>
+                  <Plus className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </Item>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -233,23 +197,31 @@ function OnboardingFeatureList({
           </div>
 
           <SheetFooter className="flex-col gap-2 sm:flex-col">
-            <Button
-              className="w-full"
-              onClick={() => handleTakeFeature("InProgress")}
-              disabled={takeFeature.isPending}
-            >
-              <IconLoader className="size-4" />
-              {takeFeature.isPending ? "Adding..." : "Start Working"}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleTakeFeature("Backlog")}
-              disabled={takeFeature.isPending}
-            >
-              <IconCircleDashed className="size-4" />
-              Add to Backlog
-            </Button>
+            {(() => {
+              const InProgressIcon = statusConfig.InProgress.icon;
+              const BacklogIcon = statusConfig.Backlog.icon;
+              return (
+                <>
+                  <Button
+                    className="w-full"
+                    onClick={() => handleTakeFeature("InProgress")}
+                    disabled={takeFeature.isPending}
+                  >
+                    <InProgressIcon className="size-4" />
+                    {takeFeature.isPending ? "Adding..." : "Start Working"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleTakeFeature("Backlog")}
+                    disabled={takeFeature.isPending}
+                  >
+                    <BacklogIcon className="size-4" />
+                    Add to Backlog
+                  </Button>
+                </>
+              );
+            })()}
           </SheetFooter>
         </SheetContent>
       </Sheet>
@@ -312,9 +284,24 @@ function StatusGroup({
 
   return (
     <>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="flex items-center gap-2">
-          <CollapsibleTrigger className="flex flex-1 items-center gap-4 rounded-lg px-2 py-2 hover:bg-muted/50">
+      <div
+        className={cn(
+          "rounded-xl border p-3",
+          status === "InProgress" &&
+            "border-amber-300 bg-amber-50/30 dark:border-amber-700 dark:bg-amber-950/20",
+          status === "Todo" &&
+            "border-stone-300 bg-stone-50/50 dark:border-stone-600 dark:bg-stone-900/50",
+          status === "Backlog" &&
+            "border-stone-300 bg-stone-50/30 dark:border-stone-700 dark:bg-stone-900/30",
+          status === "Done" &&
+            "border-emerald-300 bg-emerald-50/30 dark:border-emerald-700 dark:bg-emerald-950/20",
+          status === "Canceled" &&
+            "border-stone-300 bg-stone-50/20 dark:border-stone-700 dark:bg-stone-900/20",
+        )}
+      >
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <div className="flex items-center gap-2">
+            <CollapsibleTrigger className="flex flex-1 items-center gap-4 rounded-lg px-2 py-2 hover:bg-muted/50">
             {isOpen ? (
               <IconCaretDownFilled className="size-4 text-muted-foreground" />
             ) : (
@@ -340,15 +327,17 @@ function StatusGroup({
             </Button>
           )}
         </div>
-        <CollapsibleContent className="pl-2 pt-2">
+        <CollapsibleContent className="pt-3">
           {assignments.length > 0 ? (
-            assignments.map((assignment) => (
-              <FeatureRow
-                key={assignment.id}
-                assignment={assignment}
-                projectId={projectId}
-              />
-            ))
+            <div className="space-y-2">
+              {assignments.map((assignment) => (
+                <FeatureRow
+                  key={assignment.id}
+                  assignment={assignment}
+                  projectId={projectId}
+                />
+              ))}
+            </div>
           ) : availableFeatures.length > 0 ? (
             <Empty className="py-4 border-0 gap-3">
               <EmptyDescription>No features yet</EmptyDescription>
@@ -368,8 +357,9 @@ function StatusGroup({
               <EmptyDescription>No features</EmptyDescription>
             </Empty>
           )}
-        </CollapsibleContent>
-      </Collapsible>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="flex flex-col w-full max-w-full sm:max-w-[40%] gap-0">
@@ -441,11 +431,10 @@ export default function StudentProjectPage() {
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
 
-  const { data, isLoading, error } =
-    trpc.studentProjects.getById.useQuery(
-      { projectId },
-      { enabled: !!projectId },
-    );
+  const { data, isLoading, error } = trpc.studentProjects.getById.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
 
   const utils = trpc.useUtils();
 
@@ -509,9 +498,13 @@ export default function StudentProjectPage() {
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-xl font-bold sm:text-2xl">{project.name}</h1>
+              <h1
+                className={`${instrumentSerif.className} text-2xl tracking-[-0.02em] text-stone-900 dark:text-stone-100 sm:text-3xl`}
+              >
+                {project.name}
+              </h1>
               {project.description && (
-                <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+                <p className="mt-2 text-sm text-stone-500 dark:text-stone-400 sm:text-base">
                   {project.description}
                 </p>
               )}
@@ -595,7 +588,7 @@ export default function StudentProjectPage() {
                 status={status}
                 assignments={assignments[status]}
                 projectId={projectId}
-                defaultOpen={status !== "Done" && status !== "Canceled"}
+                defaultOpen={status === "InProgress"}
                 availableFeatures={availableFeatures}
               />
             ))}

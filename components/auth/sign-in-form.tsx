@@ -2,17 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import Link from "next/link";
+import { Instrument_Serif } from "next/font/google";
 import { authClient } from "@/lib/auth-client";
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export function SignInForm() {
   const router = useRouter();
@@ -38,7 +36,6 @@ export function SignInForm() {
         return;
       }
 
-      // Redirect to /redirect which will handle finding user's first org
       router.push("/redirect");
       router.refresh();
     } catch {
@@ -48,52 +45,87 @@ export function SignInForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>
+    <div className="flex flex-col items-center">
+      {/* Header */}
+      <div className="animate-fade-in-up mb-8 text-center">
+        <h1
+          className={`${instrumentSerif.className} text-3xl tracking-[-0.02em] text-stone-900 dark:text-stone-100`}
+        >
+          Welcome back
+        </h1>
+        <p className="mt-2 text-[15px] text-stone-500 dark:text-stone-400">
           Sign in to your account to continue
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
+        </p>
+      </div>
 
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="animate-fade-in-up-1 w-full space-y-5"
+      >
+        <div className="space-y-1.5">
+          <label
+            htmlFor="email"
+            className="text-[13px] font-medium text-stone-600 dark:text-stone-400"
+          >
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isLoading}
+            className="h-11 w-full rounded-lg border border-stone-200 bg-white px-4 text-[15px] text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-200 disabled:opacity-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus:border-stone-600 dark:focus:ring-stone-800"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label
+            htmlFor="password"
+            className="text-[13px] font-medium text-stone-600 dark:text-stone-400"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isLoading}
+            className="h-11 w-full rounded-lg border border-stone-200 bg-white px-4 text-[15px] text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-200 disabled:opacity-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus:border-stone-600 dark:focus:ring-stone-800"
+          />
+        </div>
+
+        {error && (
+          <p className="text-[13px] text-red-600 dark:text-red-400">{error}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="h-11 w-full rounded-full bg-stone-900 text-[13px] font-medium tracking-wide text-white transition-all duration-300 hover:bg-stone-800 hover:shadow-lg hover:shadow-stone-900/20 disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white dark:hover:shadow-stone-100/10"
+        >
+          {isLoading ? (
+            <span className="inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            "Sign in"
           )}
+        </button>
+      </form>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            ) : (
-              "Sign in"
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      {/* Footer */}
+      <p className="animate-fade-in-up-2 mt-8 text-center text-[13px] text-stone-500 dark:text-stone-400">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/register"
+          className="text-stone-700 underline underline-offset-2 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100"
+        >
+          Create one
+        </Link>
+      </p>
+    </div>
   );
 }

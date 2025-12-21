@@ -111,9 +111,17 @@ export function NavTabs() {
   // Check if route is active
   const isRouteActive = (route: RouteConfig): boolean => {
     const routePath = buildPath(route);
-    // Exact match only - no prefix matching to avoid overview routes
-    // staying active when navigating to sibling routes
-    return pathname === routePath;
+
+    // Exact match
+    if (pathname === routePath) return true;
+
+    // For routes with children, check if current path is a child route
+    // e.g., /org/~/projects should be active when on /org/~/projects/[id]
+    if (route.children && route.children.length > 0) {
+      return pathname.startsWith(routePath + "/");
+    }
+
+    return false;
   };
 
   return (

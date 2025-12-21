@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Trash2 } from "lucide-react";
+import { ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,13 +43,17 @@ export function getFeatureColumns({
       cell: ({ row }) => {
         const feature = row.original;
         return (
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="font-medium">{feature.title}</span>
+            {/* Mobile: show chevron indicator */}
+            <ChevronRight className="size-4 text-muted-foreground sm:hidden" />
+            {/* Desktop: show Open button for PMs */}
             {isPM && (
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onEdit(feature)}
+                className="hidden sm:inline-flex"
               >
                 Open
               </Button>
@@ -66,22 +70,24 @@ export function getFeatureColumns({
     },
     {
       accessorKey: "tags",
-      header: () => <div className="text-right">Tags</div>,
+      header: () => <div className="text-right hidden sm:block">Tags</div>,
+      size: 180,
+      meta: { className: "hidden sm:table-cell" },
       cell: ({ row }) => {
         const tags = row.original.tags;
-        const maxTags = 5;
+        const maxTags = 3;
         const visibleTags = tags.slice(0, maxTags);
         const remainingCount = tags.length - maxTags;
 
         return (
           <div className="flex flex-wrap justify-end gap-1">
             {visibleTags.map((tag) => (
-              <Badge key={tag} variant="secondary">
+              <Badge key={tag} variant="secondary" className="px-1.5 py-0 text-[11px]">
                 {tag}
               </Badge>
             ))}
             {remainingCount > 0 && (
-              <Badge variant="outline" className="text-muted-foreground">
+              <Badge variant="outline" className="px-1.5 py-0 text-[11px] text-muted-foreground">
                 +{remainingCount}
               </Badge>
             )}
@@ -96,9 +102,10 @@ export function getFeatureColumns({
     },
     {
       id: "actions",
-      header: () => <div className="text-right">Actions</div>,
+      header: () => <div className="text-right hidden sm:block">Actions</div>,
       size: 100,
       enableResizing: false,
+      meta: { className: "hidden sm:table-cell" },
       cell: ({ row }) => {
         const feature = row.original;
         return (
