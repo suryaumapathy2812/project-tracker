@@ -213,7 +213,7 @@ export default function Tiptap({
 
   return (
     <div className={cn("rounded-md border bg-background", className)}>
-      {editable && <Toolbar editor={editor} />}
+      {editable && editor && <Toolbar editor={editor} />}
       <EditorContent
         editor={editor}
         className={cn(

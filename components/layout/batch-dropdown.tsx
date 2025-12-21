@@ -46,16 +46,17 @@ export function BatchDropdown() {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-2 px-2">
-          <span className="max-w-[150px] truncate text-sm font-medium">
-            {currentBatch?.name || "All Batches"}
-          </span>
-          <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px]">
+    <div className="flex items-center gap-1">
+      <span className="max-w-[150px] truncate text-sm font-medium">
+        {currentBatch?.name || "All Batches"}
+      </span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-7 w-7">
+            <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[200px]">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
           Select Batch
         </DropdownMenuLabel>
@@ -89,7 +90,8 @@ export function BatchDropdown() {
             </DropdownMenuItem>
           </>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
