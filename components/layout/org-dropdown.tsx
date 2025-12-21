@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronsUpDown, Check, Building2, Plus } from "lucide-react";
+import { ChevronsUpDown, Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigation } from "@/lib/contexts/navigation-context";
 
 export function OrgDropdown() {
@@ -26,20 +26,16 @@ export function OrgDropdown() {
     return null;
   }
 
-  // Single org - just show name (no dropdown)
+  // Single org - show name as link
   if (availableOrgs.length <= 1) {
     return (
-      <div className="flex items-center gap-2 px-2">
-        <Avatar className="h-6 w-6">
-          {currentOrg.logo && <AvatarImage src={currentOrg.logo} />}
-          <AvatarFallback className="text-xs">
-            {currentOrg.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <span className="max-w-[150px] truncate text-sm font-medium">
-          {currentOrg.name}
-        </span>
-      </div>
+      <Button variant="ghost" className="px-2" asChild>
+        <Link href={`/${currentOrg.slug}`}>
+          <span className="max-w-[150px] truncate text-sm font-medium">
+            {currentOrg.name}
+          </span>
+        </Link>
+      </Button>
     );
   }
 
@@ -48,12 +44,6 @@ export function OrgDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2 px-2">
-          <Avatar className="h-6 w-6">
-            {currentOrg.logo && <AvatarImage src={currentOrg.logo} />}
-            <AvatarFallback className="text-xs">
-              {currentOrg.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
           <span className="max-w-[150px] truncate text-sm font-medium">
             {currentOrg.name}
           </span>
@@ -68,14 +58,7 @@ export function OrgDropdown() {
           <DropdownMenuItem
             key={org.id}
             onClick={() => handleSelectOrg(org.slug)}
-            className="flex items-center gap-2"
           >
-            <Avatar className="h-6 w-6">
-              {org.logo && <AvatarImage src={org.logo} />}
-              <AvatarFallback className="text-xs">
-                {org.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
             <span className="flex-1 truncate">{org.name}</span>
             {currentOrg.id === org.id && (
               <Check className="h-4 w-4 text-primary" />

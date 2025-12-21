@@ -58,13 +58,17 @@ export const useOrgStore = create<OrgState>()(
       setOrgs: (orgs) => set({ orgs }),
 
       setActiveOrg: (activeOrgId, activeOrgSlug) =>
-        set({
-          activeOrgId,
-          activeOrgSlug,
-          // Reset batch when org changes
-          batches: [],
-          activeBatchId: null,
-          activeBatchSlug: null,
+        set((state) => {
+          // Only reset batches if org is actually changing
+          const isOrgChanging = state.activeOrgId !== activeOrgId;
+          return {
+            activeOrgId,
+            activeOrgSlug,
+            // Reset batch only when org changes
+            batches: isOrgChanging ? [] : state.batches,
+            activeBatchId: isOrgChanging ? null : state.activeBatchId,
+            activeBatchSlug: isOrgChanging ? null : state.activeBatchSlug,
+          };
         }),
 
       setBatches: (batches) => set({ batches }),

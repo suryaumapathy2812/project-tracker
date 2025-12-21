@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SocialButtons } from "./social-buttons";
 import { authClient } from "@/lib/auth-client";
 
 export function SignInForm() {
@@ -58,19 +56,6 @@ export function SignInForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <SocialButtons />
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -108,13 +93,6 @@ export function SignInForm() {
             )}
           </Button>
         </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </p>
       </CardContent>
     </Card>
   );

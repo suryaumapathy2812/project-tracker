@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronsUpDown, Check, Building2, Layers, Plus } from "lucide-react";
+import { ChevronsUpDown, Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -49,7 +49,6 @@ export function BatchDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2 px-2">
-          <Layers className="h-4 w-4" />
           <span className="max-w-[150px] truncate text-sm font-medium">
             {currentBatch?.name || "All Batches"}
           </span>
@@ -63,7 +62,6 @@ export function BatchDropdown() {
 
         {/* "All Batches" option - goes to org level */}
         <DropdownMenuItem onClick={handleGoToOrgLevel}>
-          <Building2 className="mr-2 h-4 w-4" />
           <span>All Batches</span>
           {isOrgLevel && <Check className="ml-auto h-4 w-4 text-primary" />}
         </DropdownMenuItem>
@@ -75,7 +73,6 @@ export function BatchDropdown() {
             key={batch.id}
             onClick={() => handleSelectBatch(batch.slug)}
           >
-            <Layers className="mr-2 h-4 w-4" />
             <span className="flex-1 truncate">{batch.name}</span>
             {currentBatch?.id === batch.id && (
               <Check className="ml-auto h-4 w-4 text-primary" />
