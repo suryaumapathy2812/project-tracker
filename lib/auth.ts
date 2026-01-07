@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin, organization } from "better-auth/plugins";
+import { admin, organization, bearer } from "better-auth/plugins";
 import { db } from "./db";
 import { ac, Admin, PM, Student } from "./auth-permissions";
 
@@ -46,6 +46,7 @@ export const auth = betterAuth({
       },
       creatorRole: "Admin", // Creator of org becomes Admin
     }),
+    bearer(), // Enable Bearer token authentication for API clients
   ],
 });
 
