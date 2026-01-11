@@ -42,49 +42,44 @@ export async function POST(request: Request) {
       });
     }
 
-    // Call Better Auth's sign up API
-    const result = await auth.api.signUpEmail({
+    // Call Better Auth's sign up API (without asResponse to get data directly)
+    const data = await auth.api.signUpEmail({
       body: {
         email: email.toLowerCase().trim(),
         password,
         name: name.trim(),
       },
-      asResponse: true,
     });
 
-    // Check for errors
-    if (!result.ok) {
-      const errorData = await result.json();
-
-      // Handle specific error cases
-      if (result.status === 422 || errorData?.code === "USER_ALREADY_EXISTS") {
-        return apiErrors.emailExists();
-      }
-
-      return apiErrors.validationError(
-        errorData?.message || "Registration failed"
-      );
-    }
-
-    // Extract token from response header
-    const token = result.headers.get("set-auth-token");
-    const data = await result.json();
-
-    if (!token || !data.user) {
-      return apiErrors.internalError("Failed to create session");
+    // Check if we got valid data
+    if (!data || !data.user || !data.session) {
+      return apiErrors.validationError("Registration failed");
     }
 
     return successResponse(
       {
-        token,
+        token: data.session.token,
         user: formatUserResponse(data.user),
         session: formatSessionResponse(data.session),
         isNewUser: true,
       },
       201
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Register error:", error);
+
+    // Handle Better Auth API errors (check error properties)
+    if (error && typeof error === "object") {
+      const err = error as { body?: { code?: string }; status?: string };
+
+      if (
+        err.body?.code === "USER_ALREADY_EXISTS" ||
+        err.status === "UNPROCESSABLE_ENTITY"
+      ) {
+        return apiErrors.emailExists();
+      }
+    }
+
     return apiErrors.internalError();
   }
 }
