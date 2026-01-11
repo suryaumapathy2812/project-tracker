@@ -5,10 +5,7 @@ import {
   validateRequired,
   validateEmail,
 } from "@/lib/api-auth/response";
-import {
-  formatUserResponse,
-  formatSessionResponse,
-} from "@/lib/api-auth/middleware";
+import { formatUserResponse } from "@/lib/api-auth/middleware";
 import type { LoginRequestBody } from "@/lib/api-auth/types";
 
 /**
@@ -43,14 +40,13 @@ export async function POST(request: Request) {
     });
 
     // Check if we got valid data
-    if (!data || !data.user || !data.session) {
+    if (!data || !data.user || !data.token) {
       return apiErrors.invalidCredentials();
     }
 
     return successResponse({
-      token: data.session.token,
+      token: data.token,
       user: formatUserResponse(data.user),
-      session: formatSessionResponse(data.session),
     });
   } catch (error: unknown) {
     console.error("Login error:", error);
