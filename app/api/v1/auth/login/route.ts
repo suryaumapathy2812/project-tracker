@@ -34,51 +34,44 @@ export async function POST(request: Request) {
       });
     }
 
-    // Call Better Auth's sign in API
-    const result = await auth.api.signInEmail({
+    // Call Better Auth's sign in API (without asResponse to get data directly)
+    const data = await auth.api.signInEmail({
       body: {
         email: email.toLowerCase().trim(),
         password,
       },
-      asResponse: true,
     });
 
-    // Check for errors
-    if (!result.ok) {
-      const errorData = await result.json();
-
-      // Handle specific error cases
-      if (
-        result.status === 401 ||
-        errorData?.code === "INVALID_EMAIL_OR_PASSWORD"
-      ) {
-        return apiErrors.invalidCredentials();
-      }
-
-      if (result.status === 403) {
-        return apiErrors.unauthorized(
-          errorData?.message || "Account is banned or suspended"
-        );
-      }
-
+    // Check if we got valid data
+    if (!data || !data.user || !data.session) {
       return apiErrors.invalidCredentials();
     }
 
-    // Extract token from response header
-    const token = result.headers.get("set-auth-token");
-    const data = await result.json();
-
-    if (!token || !data.user) {
-      return apiErrors.internalError("Failed to create session");
-    }
-
     return successResponse({
-      token,
+      token: data.session.token,
       user: formatUserResponse(data.user),
       session: formatSessionResponse(data.session),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
+
+    // Handle Better Auth API errors (check error properties)
+    if (error && typeof error === "object") {
+      const err = error as { body?: { code?: string; message?: string }; status?: string };
+
+      if (
+        err.body?.code === "INVALID_EMAIL_OR_PASSWORD" ||
+        err.status === "UNAUTHORIZED"
+      ) {
+        return apiErrors.invalidCredentials();
+      }
+      if (err.status === "FORBIDDEN") {
+        return apiErrors.unauthorized(
+          err.body?.message || "Account is banned or suspended"
+        );
+      }
+    }
+
     return apiErrors.internalError();
   }
 }
